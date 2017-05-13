@@ -14,7 +14,9 @@ while True:
     nowS = now.strftime('%Y-%m-%d-%H:%M:%S')
 
     for tweet in consumer:
-        client.write(directoryPath + '/' + nowS + '.txt', dumps(tweet))
+
+        with client.write(directoryPath + '/' + nowS + '.txt') as writer:
+            writer.write(tweet)
 
         tdelta = datetime.now() - now
         if tdelta.total_seconds() >= 600:
