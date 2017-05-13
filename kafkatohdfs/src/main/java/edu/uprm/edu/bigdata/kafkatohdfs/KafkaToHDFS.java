@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.time.Instant;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 
 public class KafkaToHDFS {
