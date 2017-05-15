@@ -11,7 +11,7 @@ import os
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--jars $SPARK_HOME/jars/spark-streaming-kafka-0-8-assembly_2.11.jar pyspark-shell'
 
 def read_credentials():
-    file_name = "credentials.json"
+    file_name = "/home/andres.hernandez2/bigdata-project2/credentials.json"
     try:
         with open(file_name) as data_file:
             return json.load(data_file)
