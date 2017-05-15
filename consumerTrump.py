@@ -20,7 +20,7 @@ def getSparkSessionInstance(sparkConf):
 
 def consumer():
     context = StreamingContext(sc, 30)
-    dStream = KafkaUtils.createDirectStream(context, ["trump"], {"metadata.broker.list": "136.145.216.167:9092"})
+    dStream = KafkaUtils.createDirectStream(context, ["test"], {"metadata.broker.list": "localhost:9092"})
     dStream.foreachRDD(p1)
     context.start()
     context.awaitTermination()
@@ -39,10 +39,10 @@ def insertText(keywords, spark, time):
         rddKeywords = rddKeywords.map(lambda x: x.lower()).filter(lambda x: "trump" in x)
         if rddKeywords.count() > 0:
             # Convert RDD[String] to RDD[Row] to DataFrame
-            keywordsDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(tweet=x, hora=time)))
+            keywordsDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(tweet=x, hour=time)))
             keywordsDataFrame.createOrReplaceTempView("fastcapture")
-            keywordsDataFrame = spark.sql("use profe")
-            keywordsDataFrame = spark.sql("select tweet, hora from fastcapture")
+            keywordsDataFrame = spark.sql("use bdp2")
+            keywordsDataFrame = spark.sql("select tweet, hour from fastcapture")
             keywordsDataFrame.write.mode("append").saveAsTable("fastcapture")
             print("Inserted fastcapture FINISH")
     else:
