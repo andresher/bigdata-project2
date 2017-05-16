@@ -15,12 +15,12 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--jars $SPARK_HOME/jars/spark-streaming-kaf
 
 def getSparkSessionInstance(sparkConf):
     if ('sparkSessionSingletonInstance' not in globals()):
-        globals()['sparkSessionSingletonInstance'] = SparkSession.builder.config(conf=sparkConf).enableHiveSupport().getOrCreate()
+        globals()['sparkSessionSingletonInstance'] = SparkSession.builder.config("spark.sql.warehouse.dir", '/user/hive/warehouse').enableHiveSupport().getOrCreate()
     return globals()['sparkSessionSingletonInstance']
 
 def consumer():
     context = StreamingContext(sc, 30)
-    dStream = KafkaUtils.createDirectStream(context, ["test"], {"metadata.broker.list": "localhost:9092"})
+    dStream = KafkaUtils.createDirectStream(context, ["trump"], {"metadata.broker.list": "localhost:9092"})
     dStream.foreachRDD(p1)
     context.start()
     context.awaitTermination()
@@ -40,10 +40,11 @@ def insertText(keywords, spark, time):
         if rddKeywords.count() > 0:
             # Convert RDD[String] to RDD[Row] to DataFrame
             keywordsDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(tweet=x, hour=time)))
-            keywordsDataFrame.createOrReplaceTempView("fastcapture")
+            keywordsDataFrame.createOrReplaceTempView("keywords")
+            keywordsDataFrame = spark.sql("create database if not exists bdp2")
             keywordsDataFrame = spark.sql("use bdp2")
-            keywordsDataFrame = spark.sql("select tweet, hour from fastcapture")
-            keywordsDataFrame.write.mode("append").saveAsTable("fastcapture")
+            keywordsDataFrame = spark.sql("select tweet, hour from keywords")
+            keywordsDataFrame.write.mode("append").saveAsTable("keywords")
             print("Inserted fastcapture FINISH")
     else:
         print("No keywords avaliable to insert in hive")
