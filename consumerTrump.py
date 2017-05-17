@@ -121,7 +121,7 @@ def p1(time,rdd):
     hashtags = [x for x in hashtags if x]
     hashtags = [element[0]["text"] for element in hashtags]
     insertHashtags(hashtags, spark, time)
-    if datetime.now() > lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
+    if datetime.now() > global lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
         updateHashtags(spark)
         lastHtgRefresh = datetime.now()
 
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     lastTxtRefresh = datetime.now()
     lastSnRefresh = datetime.now()
     lastKwRefresh = datetime.now()
-    print("Startup at %s", datetime.now())
+    print("Startup at", datetime.now())
     sc = SparkContext(appName="ConsumerTRUMP")
     consumer()
