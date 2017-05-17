@@ -122,25 +122,25 @@ def p1(time,rdd):
     hashtags = [element[0]["text"] for element in hashtags]
     insertHashtags(hashtags, spark, time)
     global lastHtgRefresh
-    if datetime.now() > lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
+    if datetime.now() > lastHtgRefresh + timedelta(minutes=2): # TODO: Change to 10
         updateHashtags(spark)
         lastHtgRefresh = datetime.now()
 
     # Part 4.b
     text = [element["text"] for element in records if "text" in element]
     insertText(text, spark, time)
-    # if datetime.now() > lastTxtRefresh + deltatime(minutes=2): # TODO: Change to 10
+    # if datetime.now() > lastTxtRefresh + timedelta(minutes=2): # TODO: Change to 10
         # updateTexts(spark)
 
     # Part 4.c
     sn = [element["user"]["screen_name"] for element in records if "user" in element]
     insertScreenName(sn, spark, time)
-    # if datetime.now() > lastSnRefresh + deltatime(minutes=2): # TODO: Change to 60
+    # if datetime.now() > lastSnRefresh + timedelta(minutes=2): # TODO: Change to 60
         # updateScreenNames(spark)
 
     # Part 5
     insertKeywords(text, spark, time)
-    # if datetime.now() > lastKwRefresh + deltatime(minutes=2): # TODO: Change to 60
+    # if datetime.now() > lastKwRefresh + timedelta(minutes=2): # TODO: Change to 60
         # updateKeywords(spark)
 
 lastHtgRefresh = None
