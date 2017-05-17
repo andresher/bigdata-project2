@@ -6,6 +6,7 @@ from kafka import KafkaProducer
 from operator import add
 from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 from pyspark.sql import Row, SparkSession
+from datetime import datetime, timedelta
 from stop_words import get_stop_words
 try:
     import json
@@ -43,7 +44,21 @@ def insertHashtags(hashtags, spark, time):
     else:
         print("No hashtags avaliable to insert in hive")
 
-# Part 4.b and 5
+def updateHashtags(spark):
+    hashtagsDataFrame = spark.sql("select hashtag, timestamp from hashtags")
+    hashtagsRDD = hashtagsDataFrame.rdd
+    hashtagsRDD = hashtagsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
+    hashtagsDataFrame = spark.createDataFrame(rddHashtags.map(lambda x: Row(hashtag=x["hashtag"], timestamp=["timestamp"])))
+    hashtagsDataFrame.createOrReplaceTempView("last_htgs")
+    countHtgsDataFrame = spark.sql("select hashtag, count(*) as cnt from last_htgs group by hashtag order by cnt desc")
+    now = datetime.now()
+    htgsDict = countHtgsDataFrame.rdd.map(lambda x: {"timestamp": now, "hashtag": x["hashtag"], "count": x["cnt"]}).take(10)
+    f = open('/home/andres.hernandez2/bigdata-project2/out/hashtags.txt', 'a')
+    f.write(str(htgsDict))
+    f.write("\n")
+    f.close()
+
+# Part 4.b
 def insertText(text, spark, time):
     if text:
         stop_words = get_stop_words('en')
@@ -101,24 +116,42 @@ def p1(time,rdd):
     records = rdd.collect() #Return a list with tweets
     spark = getSparkSessionInstance(rdd.context.getConf())
 
-    # Part 4.a and 5
+    # Part 4.a
     hashtags = [element["entities"]["hashtags"] for element in records if "entities" in element]
     hashtags = [x for x in hashtags if x]
     hashtags = [element[0]["text"] for element in hashtags]
     insertHashtags(hashtags, spark, time)
+    if datetime.now() > lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
+        updateHashtags(spark)
+        lastHtgRefresh = datetime.now()
 
     # Part 4.b
     text = [element["text"] for element in records if "text" in element]
     insertText(text, spark, time)
+    if datetime.now() > lastTxtRefresh + deltatime(minutes=2): # TODO: Change to 10
+        # updateTexts(spark)
 
     # Part 4.c
     sn = [element["user"]["screen_name"] for element in records if "user" in element]
     insertScreenName(sn, spark, time)
+    if datetime.now() > lastSnRefresh + deltatime(minutes=2): # TODO: Change to 60
+        # updateScreenNames(spark)
 
     # Part 5
     insertKeywords(text, spark, time)
+    if datetime.now() > lastKwRefresh + deltatime(minutes=2): # TODO: Change to 60
+        # updateKeywords(spark)
 
+lastHtgRefresh = None
+lastTxtRefresh = None
+lastSnRefresh = None
+lastKwRefresh = None
 if __name__ == "__main__":
     print("Starting to read tweets")
+    lastHtgRefresh = datetime.now()
+    lastTxtRefresh = datetime.now()
+    lastSnRefresh = datetime.now()
+    lastKwRefresh = datetime.now()
+    print("Startup at %s", datetime.now())
     sc = SparkContext(appName="ConsumerTRUMP")
     consumer()
