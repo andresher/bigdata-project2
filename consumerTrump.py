@@ -63,6 +63,14 @@ def updateHashtags(spark):
 def insertText(text, spark, time):
     if text:
         stop_words = get_stop_words('en')
+        stop_words.extend(get_stop_words('spanish'))
+        stop_words.extend(get_stop_words('arabic'))
+        stop_words.extend(get_stop_words('spanish'))
+        stop_words.extend(get_stop_words('french'))
+        stop_words.extend(get_stop_words('german'))
+        stop_words.extend(get_stop_words('russian'))
+        stop_words.extend(get_stop_words('italian'))
+        stop_words.extend(get_stop_words('portuguese'))
         rddText = sc.parallelize(text)
         rddText = rddText.flatMap(lambda x: x.split()).map(lambda x: x.lower())
         rddText = rddText.filter(lambda x: x not in stop_words)
