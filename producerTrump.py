@@ -21,7 +21,7 @@ def read_credentials():
 
 def producer1():
     sc = SparkContext(appName="ProducerTrump")
-    ssc = StreamingContext(sc, 180)
+    ssc = StreamingContext(sc, 12)
     kvs = KafkaUtils.createDirectStream(ssc, ["trump"], {"metadata.broker.list": "localhost:9092"})
     kvs.foreachRDD(send)
     producer.flush()
@@ -33,8 +33,7 @@ def send(message):
     count=0
     for tweet in iterator:
         producer.send('trump', bytes(json.dumps(tweet, indent=6), "ascii"))
-        count+=1
-        print("Tweet sent")
+        # count+=1 # Remove comment to have it stop automatically
         if(count==20000):
             break
 
