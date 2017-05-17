@@ -84,9 +84,9 @@ def updateTexts(spark):
     textsRDD = textsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
     textsDataFrame = spark.createDataFrame(textsRDD.map(lambda x: Row(text=x["text"], timestamp=["timestamp"])))
     textsDataFrame.createOrReplaceTempView("last_texts")
-    countHtgsDataFrame = spark.sql("select text, count(*) as cnt from last_texts group by text order by cnt desc")
+    countTxtsDataFrame = spark.sql("select text, count(*) as cnt from last_texts group by text order by cnt desc")
     now = datetime.now()
-    textDict = countHtgsDataFrame.rdd.map(lambda x: {"timestamp": now, "text": x["text"], "count": x["cnt"]}).take(10)
+    textDict = countTxtsDataFrame.rdd.map(lambda x: {"timestamp": now, "text": x["text"], "count": x["cnt"]}).take(10)
     f = open('/home/andres.hernandez2/bigdata-project2/out/texts.txt', 'a')
     f.write(str(textDict))
     f.write("\n")
@@ -109,6 +109,21 @@ def insertScreenName(sn, spark, time):
     else:
         print("No screen name avaliable to insert into hive")
 
+def updateScreenNames(spark):
+    snsDataFrame = spark.sql("select sn, timestamp from screennames")
+    snsRDD = snsDataFrame.rdd
+    snsRDD = snsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=12))
+    snsDataFrame = spark.createDataFrame(snsRDD.map(lambda x: Row(sn=x["sn"], timestamp=["timestamp"])))
+    snsDataFrame.createOrReplaceTempView("last_sns")
+    countSnDataFrame = spark.sql("select sn, count(*) as cnt from last_sns group by sn order by cnt desc")
+    now = datetime.now()
+    snDict = countSnDataFrame.rdd.map(lambda x: {"timestamp": now, "sn": x["sn"], "count": x["cnt"]}).take(10)
+    f = open('/home/andres.hernandez2/bigdata-project2/out/screennames.txt', 'a')
+    f.write(str(snDict))
+    f.write("\n")
+    f.close()
+    print("Appended screennames to file")
+
 # Part 5
 def insertKeywords(text, spark, time):
     if text:
@@ -126,6 +141,21 @@ def insertKeywords(text, spark, time):
             print("Inserted keywords")
     else:
         print("No keywords avaliable to insert into hive")
+
+def updateKeywords(spark):
+    keywordsDataFrame = spark.sql("select keyword, timestamp from kwords")
+    keywordsRDD = keywordsDataFrame.rdd
+    keywordsRDD = keywordsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=24))
+    keywordsDataFrame = spark.createDataFrame(keywordsRDD.map(lambda x: Row(keyword=x["keyword"], timestamp=["timestamp"])))
+    keywordsDataFrame.createOrReplaceTempView("last_keywords")
+    countKwDataFrame = spark.sql("select keyword, count(*) as cnt from last_keywords group by keyword order by cnt desc")
+    now = datetime.now()
+    keywordDict = countKwDataFrame.rdd.map(lambda x: {"timestamp": now, "keyword": x["keyword"], "count": x["cnt"]}).take(6)
+    f = open('/home/andres.hernandez2/bigdata-project2/out/keywords.txt', 'a')
+    f.write(str(keywordDict))
+    f.write("\n")
+    f.close()
+    print("Appended keywords to file")
 
 def p1(time,rdd):
     rdd = rdd.map(lambda x: json.loads(x[1]))
@@ -153,13 +183,17 @@ def p1(time,rdd):
     # Part 4.c
     sn = [element["user"]["screen_name"] for element in records if "user" in element]
     insertScreenName(sn, spark, time)
-    # if datetime.now() > lastSnRefresh + timedelta(minutes=2): # TODO: Change to 60
-        # updateScreenNames(spark)
+    global lastSnRefresh
+    if datetime.now() > lastSnRefresh + timedelta(minutes=2): # TODO: Change to 60
+        updateScreenNames(spark)
+        lastSnRefresh = datetime.now()
 
     # Part 5
     insertKeywords(text, spark, time)
-    # if datetime.now() > lastKwRefresh + timedelta(minutes=2): # TODO: Change to 60
-        # updateKeywords(spark)
+    global lastKwRefresh
+    if datetime.now() > lastKwRefresh + timedelta(minutes=2): # TODO: Change to 60
+        updateKeywords(spark)
+        lastKwRefresh = datetime.now()
 
 lastHtgRefresh = None
 lastTxtRefresh = None
