@@ -121,7 +121,8 @@ def p1(time,rdd):
     hashtags = [x for x in hashtags if x]
     hashtags = [element[0]["text"] for element in hashtags]
     insertHashtags(hashtags, spark, time)
-    if datetime.now() > global lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
+    global lastHtgRefresh
+    if datetime.now() > lastHtgRefresh + deltatime(minutes=2): # TODO: Change to 10
         updateHashtags(spark)
         lastHtgRefresh = datetime.now()
 
