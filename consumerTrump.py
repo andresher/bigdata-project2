@@ -28,7 +28,7 @@ def consumer():
 
 # Part 4.a
 def insertHashtags(hashtags, spark, time):
-    if hastags:
+    if hashtags:
         rddHashtags = sc.parallelize(hashtags)
         rddHashtags = rddHashtags.map(lambda x: x.lower())
         if rddHashtags.count() > 0:
@@ -37,7 +37,7 @@ def insertHashtags(hashtags, spark, time):
             hashtagsDataFrame.createOrReplaceTempView("hashtags")
             hashtagsDataFrame = spark.sql("create database if not exists bdp2")
             hashtagsDataFrame = spark.sql("use bdp2")
-            hashtagsDataFrame = spark.sql("select hastag, timestamp from hashtags")
+            hashtagsDataFrame = spark.sql("select hashtag, timestamp from hashtags")
             hashtagsDataFrame.write.mode("append").saveAsTable("hashtags")
             print("Inserted hashtags")
     else:
