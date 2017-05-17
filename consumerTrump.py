@@ -57,6 +57,7 @@ def updateHashtags(spark):
     f.write(str(htgsDict))
     f.write("\n")
     f.close()
+    print("Appended hashtags to file")
 
 # Part 4.b
 def insertText(text, spark, time):
@@ -76,6 +77,21 @@ def insertText(text, spark, time):
             print("Inserted text")
     else:
         print("No text avaliable to insert into hive")
+
+def updateTexts(spark):
+    textsDataFrame = spark.sql("select text, timestamp from text")
+    textsRDD = textsDataFrame.rdd
+    textsRDD = textsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
+    textsDataFrame = spark.createDataFrame(textsRDD.map(lambda x: Row(text=x["text"], timestamp=["timestamp"])))
+    textsDataFrame.createOrReplaceTempView("last_texts")
+    countHtgsDataFrame = spark.sql("select text, count(*) as cnt from last_texts group by text order by cnt desc")
+    now = datetime.now()
+    textDict = countHtgsDataFrame.rdd.map(lambda x: {"timestamp": now, "text": x["text"], "count": x["cnt"]}).take(10)
+    f = open('/home/andres.hernandez2/bigdata-project2/out/texts.txt', 'a')
+    f.write(str(textDict))
+    f.write("\n")
+    f.close()
+    print("Appended texts to file")
 
 # Part 4.c
 def insertScreenName(sn, spark, time):
@@ -129,8 +145,10 @@ def p1(time,rdd):
     # Part 4.b
     text = [element["text"] for element in records if "text" in element]
     insertText(text, spark, time)
-    # if datetime.now() > lastTxtRefresh + timedelta(minutes=2): # TODO: Change to 10
-        # updateTexts(spark)
+    global lastTxtRefresh
+    if datetime.now() > lastTxtRefresh + timedelta(minutes=2): # TODO: Change to 10
+        updateTexts(spark)
+        lastTxtRefresh = datetime.now()
 
     # Part 4.c
     sn = [element["user"]["screen_name"] for element in records if "user" in element]
