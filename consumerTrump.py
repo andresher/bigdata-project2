@@ -6,6 +6,7 @@ from kafka import KafkaProducer
 from operator import add
 from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 from pyspark.sql import Row, SparkSession
+from stop_words import get_stop_words
 try:
     import json
 except ImportError:
@@ -25,29 +26,56 @@ def consumer():
     context.start()
     context.awaitTermination()
 
+# Part 4.a
+def insertHashtags(hashtags, spark, time):
+    if hastags:
+        rddHashtags = sc.parallelize(hashtags)
+        rddHashtags = rddHashtags.map(lambda x: x.lower())
+        if rddHashtags.count() > 0:
+            # Convert RDD[String] to RDD[Row] to DataFrame
+            hashtagsDataFrame = spark.createDataFrame(rddHashtags.map(lambda x: Row(hashtag=x, timestamp=time)))
+            hashtagsDataFrame.createOrReplaceTempView("hashtags")
+            hashtagsDataFrame = spark.sql("create database if not exists bdp2")
+            hashtagsDataFrame = spark.sql("use bdp2")
+            hashtagsDataFrame = spark.sql("select hastag, timestamp from hashtags")
+            hashtagsDataFrame.write.mode("append").saveAsTable("hashtags")
+            print("Inserted hashtags")
+    else:
+        print("No hashtags avaliable to insert in hive")
+
+# Part 4.b
+def insertText(text, spark, time):
+    if text:
+        stop_words = get_stop_words('en')
+        rddText = sc.parallelize(text)
+        rddText = rddText.flatMap(lambda x: x.split()).map(lambda x: x.lower())
+        rddText = rddText.filter(lambda x: x not in stop_words)
+        if rddText.count() > 0:
+            # Convert RDD[String] to RDD[Row] to DataFrame
+            textDataFrame = spark.createDataFrame(rddText.map(lambda x: Row(text=x, timestamp=time)))
+            textDataFrame.createOrReplaceTempView("text")
+            textDataFrame = spark.sql("create database if not exists bdp2")
+            textDataFrame = spark.sql("use bdp2")
+            textDataFrame = spark.sql("select text, timestamp from text")
+            textDataFrame.write.mode("append").saveAsTable("text")
+            print("Inserted text")
+    else:
+        print("No text avaliable to insert into hive")
+
 def p1(time,rdd):
     rdd = rdd.map(lambda x: json.loads(x[1]))
     records = rdd.collect() #Return a list with tweets
     spark = getSparkSessionInstance(rdd.context.getConf())
 
-    keywords = [element["text"] for element in records if "text" in element]
-    insertText(keywords, spark, time)
+    # Part 4.a
+    hashtags = [element["entities"]["hashtags"] for element in records if "entities" in element]
+    hashtags = [x for x in hashtags if x]
+    hashtags = [element[0]["text"] for element in hashtags]
+    insertHashtags(hashtags, spark, time)
 
-def insertText(keywords, spark, time):
-    if keywords:
-        rddKeywords = sc.parallelize(keywords)
-        rddKeywords = rddKeywords.map(lambda x: x.lower()).filter(lambda x: "trump" in x)
-        if rddKeywords.count() > 0:
-            # Convert RDD[String] to RDD[Row] to DataFrame
-            keywordsDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(tweet=x, hour=time)))
-            keywordsDataFrame.createOrReplaceTempView("keywords")
-            keywordsDataFrame = spark.sql("create database if not exists bdp2")
-            keywordsDataFrame = spark.sql("use bdp2")
-            keywordsDataFrame = spark.sql("select tweet, hour from keywords")
-            keywordsDataFrame.write.mode("append").saveAsTable("keywords")
-            print("Inserted fastcapture FINISH")
-    else:
-        print("No keywords avaliable to insert in hive")
+    # Part 4.b
+    text = [element["text"] for element in records if "text" in element]
+    insertText(text, spark, time)
 
 if __name__ == "__main__":
     print("Starting to read tweets")
