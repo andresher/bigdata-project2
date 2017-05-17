@@ -45,19 +45,23 @@ def insertHashtags(hashtags, spark, time):
         print("No hashtags avaliable to insert in hive")
 
 def updateHashtags(spark):
-    hashtagsDataFrame = spark.sql("select hashtag, timestamp from hashtags")
-    hashtagsRDD = hashtagsDataFrame.rdd
-    hashtagsRDD = hashtagsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
-    hashtagsDataFrame = spark.createDataFrame(hashtagsRDD.map(lambda x: Row(hashtag=x["hashtag"], timestamp=["timestamp"])))
-    hashtagsDataFrame.createOrReplaceTempView("last_htgs")
-    countHtgsDataFrame = spark.sql("select hashtag, count(*) as cnt from last_htgs group by hashtag order by cnt desc")
-    now = datetime.now()
-    htgsDict = countHtgsDataFrame.rdd.map(lambda x: {"timestamp": now, "hashtag": x["hashtag"], "count": x["cnt"]}).take(10)
-    f = open('/home/andres.hernandez2/bigdata-project2/out/hashtags.txt', 'a')
-    f.write(str(htgsDict))
-    f.write("\n")
-    f.close()
-    print("Appended hashtags to file")
+    try:
+        hashtagsDataFrame = spark.sql("select hashtag, timestamp from hashtags")
+        hashtagsRDD = hashtagsDataFrame.rdd
+        hashtagsRDD = hashtagsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=60))
+        hashtagsDataFrame = spark.createDataFrame(hashtagsRDD.map(lambda x: Row(hashtag=x["hashtag"], timestamp=["timestamp"])))
+        hashtagsDataFrame.createOrReplaceTempView("last_htgs")
+        countHtgsDataFrame = spark.sql("select hashtag, count(*) as cnt from last_htgs group by hashtag order by cnt desc")
+        now = datetime.now()
+        htgsDict = countHtgsDataFrame.rdd.map(lambda x: {"timestamp": now, "hashtag": x["hashtag"], "count": x["cnt"]}).take(10)
+        f = open('/home/andres.hernandez2/bigdata-project2/out/hashtags.txt', 'a')
+        f.write(str(htgsDict))
+        f.write("\n")
+        f.close()
+        print("Appended hashtags to file")
+    except:
+        print("Exception appending hashtags")
+        pass
 
 # Part 4.b
 def insertText(text, spark, time):
@@ -87,19 +91,23 @@ def insertText(text, spark, time):
         print("No text avaliable to insert into hive")
 
 def updateTexts(spark):
-    textsDataFrame = spark.sql("select text, timestamp from text")
-    textsRDD = textsDataFrame.rdd
-    textsRDD = textsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
-    textsDataFrame = spark.createDataFrame(textsRDD.map(lambda x: Row(text=x["text"], timestamp=["timestamp"])))
-    textsDataFrame.createOrReplaceTempView("last_texts")
-    countTxtsDataFrame = spark.sql("select text, count(*) as cnt from last_texts group by text order by cnt desc")
-    now = datetime.now()
-    textDict = countTxtsDataFrame.rdd.map(lambda x: {"timestamp": now, "text": x["text"], "count": x["cnt"]}).take(10)
-    f = open('/home/andres.hernandez2/bigdata-project2/out/texts.txt', 'a')
-    f.write(str(textDict))
-    f.write("\n")
-    f.close()
-    print("Appended texts to file")
+    try:
+        textsDataFrame = spark.sql("select text, timestamp from text")
+        textsRDD = textsDataFrame.rdd
+        textsRDD = textsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=60))
+        textsDataFrame = spark.createDataFrame(textsRDD.map(lambda x: Row(text=x["text"], timestamp=["timestamp"])))
+        textsDataFrame.createOrReplaceTempView("last_texts")
+        countTxtsDataFrame = spark.sql("select text, count(*) as cnt from last_texts group by text order by cnt desc")
+        now = datetime.now()
+        textDict = countTxtsDataFrame.rdd.map(lambda x: {"timestamp": now, "text": x["text"], "count": x["cnt"]}).take(10)
+        f = open('/home/andres.hernandez2/bigdata-project2/out/texts.txt', 'a')
+        f.write(str(textDict))
+        f.write("\n")
+        f.close()
+        print("Appended texts to file")
+    except:
+        print("Exception appending texts")
+        pass
 
 # Part 4.c
 def insertScreenName(sn, spark, time):
@@ -118,19 +126,23 @@ def insertScreenName(sn, spark, time):
         print("No screen name avaliable to insert into hive")
 
 def updateScreenNames(spark):
-    snsDataFrame = spark.sql("select sn, timestamp from screennames")
-    snsRDD = snsDataFrame.rdd
-    snsRDD = snsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=12))
-    snsDataFrame = spark.createDataFrame(snsRDD.map(lambda x: Row(sn=x["sn"], timestamp=["timestamp"])))
-    snsDataFrame.createOrReplaceTempView("last_sns")
-    countSnDataFrame = spark.sql("select sn, count(*) as cnt from last_sns group by sn order by cnt desc")
-    now = datetime.now()
-    snDict = countSnDataFrame.rdd.map(lambda x: {"timestamp": now, "sn": x["sn"], "count": x["cnt"]}).take(10)
-    f = open('/home/andres.hernandez2/bigdata-project2/out/screennames.txt', 'a')
-    f.write(str(snDict))
-    f.write("\n")
-    f.close()
-    print("Appended screennames to file")
+    try:
+        snsDataFrame = spark.sql("select sn, timestamp from screennames")
+        snsRDD = snsDataFrame.rdd
+        snsRDD = snsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=12))
+        snsDataFrame = spark.createDataFrame(snsRDD.map(lambda x: Row(sn=x["sn"], timestamp=["timestamp"])))
+        snsDataFrame.createOrReplaceTempView("last_sns")
+        countSnDataFrame = spark.sql("select sn, count(*) as cnt from last_sns group by sn order by cnt desc")
+        now = datetime.now()
+        snDict = countSnDataFrame.rdd.map(lambda x: {"timestamp": now, "sn": x["sn"], "count": x["cnt"]}).take(10)
+        f = open('/home/andres.hernandez2/bigdata-project2/out/screennames.txt', 'a')
+        f.write(str(snDict))
+        f.write("\n")
+        f.close()
+        print("Appended screennames to file")
+    except:
+        print("Exception appending screennames")
+        pass
 
 # Part 5
 def insertKeywords(text, spark, time):
@@ -151,19 +163,23 @@ def insertKeywords(text, spark, time):
         print("No keywords avaliable to insert into hive")
 
 def updateKeywords(spark):
-    keywordsDataFrame = spark.sql("select keyword, timestamp from kwords")
-    keywordsRDD = keywordsDataFrame.rdd
-    keywordsRDD = keywordsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=24))
-    keywordsDataFrame = spark.createDataFrame(keywordsRDD.map(lambda x: Row(keyword=x["keyword"], timestamp=["timestamp"])))
-    keywordsDataFrame.createOrReplaceTempView("last_keywords")
-    countKwDataFrame = spark.sql("select keyword, count(*) as cnt from last_keywords group by keyword order by cnt desc")
-    now = datetime.now()
-    keywordDict = countKwDataFrame.rdd.map(lambda x: {"timestamp": now, "keyword": x["keyword"], "count": x["cnt"]}).take(6)
-    f = open('/home/andres.hernandez2/bigdata-project2/out/keywords.txt', 'a')
-    f.write(str(keywordDict))
-    f.write("\n")
-    f.close()
-    print("Appended keywords to file")
+    try:
+        keywordsDataFrame = spark.sql("select keyword, timestamp from kwords")
+        keywordsRDD = keywordsDataFrame.rdd
+        keywordsRDD = keywordsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(hours=1))
+        keywordsDataFrame = spark.createDataFrame(keywordsRDD.map(lambda x: Row(keyword=x["keyword"], timestamp=["timestamp"])))
+        keywordsDataFrame.createOrReplaceTempView("last_keywords")
+        countKwDataFrame = spark.sql("select keyword, count(*) as cnt from last_keywords group by keyword order by cnt desc")
+        now = datetime.now()
+        keywordDict = countKwDataFrame.rdd.map(lambda x: {"timestamp": now, "keyword": x["keyword"], "count": x["cnt"]}).take(6)
+        f = open('/home/andres.hernandez2/bigdata-project2/out/keywords.txt', 'a')
+        f.write(str(keywordDict))
+        f.write("\n")
+        f.close()
+        print("Appended keywords to file")
+    except:
+        print("Exception appending keywords")
+        pass
 
 def p1(time,rdd):
     rdd = rdd.map(lambda x: json.loads(x[1]))
@@ -176,7 +192,7 @@ def p1(time,rdd):
     hashtags = [element[0]["text"] for element in hashtags]
     insertHashtags(hashtags, spark, time)
     global lastHtgRefresh
-    if datetime.now() > lastHtgRefresh + timedelta(minutes=2): # TODO: Change to 10
+    if datetime.now() > lastHtgRefresh + timedelta(minutes=10):
         updateHashtags(spark)
         lastHtgRefresh = datetime.now()
 
@@ -184,7 +200,7 @@ def p1(time,rdd):
     text = [element["text"] for element in records if "text" in element]
     insertText(text, spark, time)
     global lastTxtRefresh
-    if datetime.now() > lastTxtRefresh + timedelta(minutes=2): # TODO: Change to 10
+    if datetime.now() > lastTxtRefresh + timedelta(minutes=10):
         updateTexts(spark)
         lastTxtRefresh = datetime.now()
 
@@ -192,14 +208,14 @@ def p1(time,rdd):
     sn = [element["user"]["screen_name"] for element in records if "user" in element]
     insertScreenName(sn, spark, time)
     global lastSnRefresh
-    if datetime.now() > lastSnRefresh + timedelta(minutes=2): # TODO: Change to 60
+    if datetime.now() > lastSnRefresh + timedelta(minutes=60):
         updateScreenNames(spark)
         lastSnRefresh = datetime.now()
 
     # Part 5
     insertKeywords(text, spark, time)
     global lastKwRefresh
-    if datetime.now() > lastKwRefresh + timedelta(minutes=2): # TODO: Change to 60
+    if datetime.now() > lastKwRefresh + timedelta(days=1):
         updateKeywords(spark)
         lastKwRefresh = datetime.now()
 
