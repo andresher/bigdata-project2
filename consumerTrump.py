@@ -48,7 +48,7 @@ def updateHashtags(spark):
     hashtagsDataFrame = spark.sql("select hashtag, timestamp from hashtags")
     hashtagsRDD = hashtagsDataFrame.rdd
     hashtagsRDD = hashtagsRDD.filter(lambda x: x["timestamp"] > datetime.now() - timedelta(minutes=1440)) # TODO: Change to 60
-    hashtagsDataFrame = spark.createDataFrame(rddHashtags.map(lambda x: Row(hashtag=x["hashtag"], timestamp=["timestamp"])))
+    hashtagsDataFrame = spark.createDataFrame(hashtagsRDD.map(lambda x: Row(hashtag=x["hashtag"], timestamp=["timestamp"])))
     hashtagsDataFrame.createOrReplaceTempView("last_htgs")
     countHtgsDataFrame = spark.sql("select hashtag, count(*) as cnt from last_htgs group by hashtag order by cnt desc")
     now = datetime.now()
