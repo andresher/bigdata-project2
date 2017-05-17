@@ -43,13 +43,14 @@ def insertHashtags(hashtags, spark, time):
     else:
         print("No hashtags avaliable to insert in hive")
 
-# Part 4.b
+# Part 4.b and 5
 def insertText(text, spark, time):
     if text:
         stop_words = get_stop_words('en')
         rddText = sc.parallelize(text)
         rddText = rddText.flatMap(lambda x: x.split()).map(lambda x: x.lower())
         rddText = rddText.filter(lambda x: x not in stop_words)
+        rddKeywords = rddText.filter(lambda x: x in ["trump", "maga", "dictator", "impeach", "drain", "swamp"])
         if rddText.count() > 0:
             # Convert RDD[String] to RDD[Row] to DataFrame
             textDataFrame = spark.createDataFrame(rddText.map(lambda x: Row(text=x, timestamp=time)))
@@ -59,15 +60,40 @@ def insertText(text, spark, time):
             textDataFrame = spark.sql("select text, timestamp from text")
             textDataFrame.write.mode("append").saveAsTable("text")
             print("Inserted text")
+        if rddKeywords.count() > 0:
+            # Convert RDD[String] to RDD[Row] to DataFrame
+            keywordDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(keyword=x, timestamp=time)))
+            keywordDataFrame.createOrReplaceTempView("keywords")
+            keywordDataFrame = spark.sql("create database if not exists bdp2")
+            keywordDataFrame = spark.sql("use bdp2")
+            keywordDataFrame = spark.sql("select keyword, timestamp from keywords")
+            keywordDataFrame.write.mode("append").saveAsTable("keywords")
+            print("Inserted keywords")
     else:
         print("No text avaliable to insert into hive")
+
+# Part 4.c
+def insertScreenName(sn, spark, time):
+    if sn:
+        rddText = sc.parallelize(sn)
+        if rddText.count() > 0:
+            # Convert RDD[String] to RDD[Row] to DataFrame
+            snDataFrame = spark.createDataFrame(rddText.map(lambda x: Row(sn=x, timestamp=time)))
+            snDataFrame.createOrReplaceTempView("screenname")
+            snDataFrame = spark.sql("create database if not exists bdp2")
+            snDataFrame = spark.sql("use bdp2")
+            snDataFrame = spark.sql("select sn, timestamp from screenname")
+            snDataFrame.write.mode("append").saveAsTable("sn")
+            print("Inserted screen name")
+    else:
+        print("No screen name avaliable to insert into hive")
 
 def p1(time,rdd):
     rdd = rdd.map(lambda x: json.loads(x[1]))
     records = rdd.collect() #Return a list with tweets
     spark = getSparkSessionInstance(rdd.context.getConf())
 
-    # Part 4.a
+    # Part 4.a and 5
     hashtags = [element["entities"]["hashtags"] for element in records if "entities" in element]
     hashtags = [x for x in hashtags if x]
     hashtags = [element[0]["text"] for element in hashtags]
@@ -76,6 +102,10 @@ def p1(time,rdd):
     # Part 4.b
     text = [element["text"] for element in records if "text" in element]
     insertText(text, spark, time)
+
+    # Part 4.c
+    sn = [element["user"]["screen_name"] for element in records if "user" in element]
+    insertScreenName(sn, spark, time)
 
 if __name__ == "__main__":
     print("Starting to read tweets")
