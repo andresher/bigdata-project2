@@ -69,11 +69,11 @@ def insertScreenName(sn, spark, time):
         if rddText.count() > 0:
             # Convert RDD[String] to RDD[Row] to DataFrame
             snDataFrame = spark.createDataFrame(rddText.map(lambda x: Row(sn=x, timestamp=time)))
-            snDataFrame.createOrReplaceTempView("screenname")
+            snDataFrame.createOrReplaceTempView("screennames")
             snDataFrame = spark.sql("create database if not exists bdp2")
             snDataFrame = spark.sql("use bdp2")
-            snDataFrame = spark.sql("select sn, timestamp from screenname")
-            snDataFrame.write.mode("append").saveAsTable("sn")
+            snDataFrame = spark.sql("select sn, timestamp from screennames")
+            snDataFrame.write.mode("append").saveAsTable("screennames")
             print("Inserted screen name")
     else:
         print("No screen name avaliable to insert into hive")
@@ -87,11 +87,11 @@ def insertKeywords(text, spark, time):
         if rddKeywords.count() > 0:
             # Convert RDD[String] to RDD[Row] to DataFrame
             keywordDataFrame = spark.createDataFrame(rddKeywords.map(lambda x: Row(keyword=x, timestamp=time)))
-            keywordDataFrame.createOrReplaceTempView("keywords")
+            keywordDataFrame.createOrReplaceTempView("kwords")
             keywordDataFrame = spark.sql("create database if not exists bdp2")
             keywordDataFrame = spark.sql("use bdp2")
-            keywordDataFrame = spark.sql("select keyword, timestamp from keywords")
-            keywordDataFrame.write.mode("append").saveAsTable("keywords")
+            keywordDataFrame = spark.sql("select keyword, timestamp from kwords")
+            keywordDataFrame.write.mode("append").saveAsTable("kywords")
             print("Inserted keywords")
     else:
         print("No keywords avaliable to insert into hive")
