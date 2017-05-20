@@ -1,6 +1,8 @@
 # Big Data Project 2
 This is the project 2 for the Big Data Analytics Course (CIIC 5995-116), Spring 2017 at the University of Puerto Rico, Mayaguez Campus. Implemented real-time analysis of tweets using Spark, Spark Streaming, SparkSQL, Hive and Kafka. Visualizations were made using plotly, a Python library based on D3.js.
 
+Made by Andrés Hernández
+
 ## Visualizations  
 
 #### Part 4.a: Top 10 trending hashtags of the last hour refreshed every 10 minutes.
