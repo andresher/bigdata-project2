@@ -7,8 +7,8 @@ Made by Andrés Hernández
 
 #### Part 4.a: Top 10 trending hashtags of the last hour refreshed every 10 minutes.
 <div>
-    <a href="https://plot.ly/~andresher/2/?share_key=HSvwkvnCEm7VyMvXSAayOt" target="_blank" title="hastags-trace" style="display: block; text-align: center;"><img src="https://plot.ly/~andresher/2.png?share_key=HSvwkvnCEm7VyMvXSAayOt" alt="hastags-trace" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="andresher:2" sharekey-plotly="HSvwkvnCEm7VyMvXSAayOt" src="https://plot.ly/embed.js" async></script>
+    <a href="https://plot.ly/~andresher/10/?share_key=hLnQy9Dv8IaGQAVCQBxkbX" target="_blank" title="all-hashtags-scatter" style="display: block; text-align: center;"><img src="https://plot.ly/~andresher/10.png?share_key=hLnQy9Dv8IaGQAVCQBxkbX" alt="all-hashtags-scatter" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="andresher:10" sharekey-plotly="hLnQy9Dv8IaGQAVCQBxkbX" src="https://plot.ly/embed.js" async></script>
 </div>
 
 #### Part 4.b: Top 10 trending words of the last hour refreshed every 10 minutes.
